@@ -1,0 +1,43 @@
+---
+title: "BIO 380 - Fall 2021 - Velazquez-Ulloa"
+output: pdf_document
+---
+
+Workshop Goals!
+
+* Gain familiarity with RStudio
+* Learn basic R commands
+* Load data into RStudio
+* Create Data Visualizations using ggplot
+
+This document is an "R Notebook", which is a good choice for running R code.  R Notebooks are a mix of text/markdown, and R code "chunks". Below is an example of a code chunk. You can click the 'play' button to run the code chunk.
+
+```{r}
+#assigns 10 to the variable x
+x<-10
+
+#prints value of x
+x
+
+```
+
+```{r}
+library("tidyverse")
+
+```
+
+
+```{r}
+
+
+avgPupCount7Tr1<-read.delim("test1.txt")
+avgPupCount7Tr1
+
+
+```
+
+
+
+
+
+
