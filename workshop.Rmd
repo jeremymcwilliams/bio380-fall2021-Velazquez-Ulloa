@@ -5,9 +5,10 @@ output: pdf_document
  
 Workshop Goals!
 
-* Gain familiarity with RStudio
-* Learn basic R commands
+* Reformat Data (outside of R)
 * Load data into RStudio
+* Learn commands for filtering data
+* Use group_by/summarize
 * Create Data Visualizations using ggplot
 
 This document is an "R Notebook", which is a good choice for running R code.  R Notebooks are a mix of text/markdown, and R code "chunks". Below is an example of a code chunk. You can click the 'play' button to run the code chunk.
@@ -27,11 +28,98 @@ library("tidyverse")
 ```
 
 
+### Loading Data
+
+Loading a CSV file into RStudio isn't so bad. In the lower-right corner under the "Files" tab, click "Upload", then select the file from your computer. Once uploaded, it should appear listed in the Files tab.
+
+
+Now that the file is uploaded, we can open it within R using the "read_csv" function, and set it equal to a variable. First, let's try it with the test file:
+
+
+```{r}
+# this assigns the entire file to the variable "tidy":
+tidy<-read_csv("tidy.csv")
+
+# and now we print it to the screen:
+tidy
+
+```
+
+
+Now try this with the data you uploaded. Call it something like "myData":
+
+```{r}
+# use read_csv to assign the data to myData
+
+
+#print it out to the screen
+
+
+```
+
+
+
+A common question that comes up is "is it necessary to print things to the screen"? Technically the answer is "no", but it's a good idea to get in the habit of doing it. Making mistakes while coding is really common, so printing things is a good way to check your work. 
+
+Before we get to any plotting, we have to get good at filtering. Basically, there's so much data in our dataframe that we have to really think about the data we need.
+
+
+Let's we want to create a bar chart showing the average number of pupae of the wB strain across the three treatments (control, alcohol, and nicotine) from the first trial. We'll create a new variable that just has that data, using the filter() function:
+
+
 ```{r}
 
 
-avgPupCount7Tr1<-read.delim("test1.txt")
-avgPupCount7Tr1
+wbNumPupD7T1<-filter(.data=tidy, (Table=="NumPupaeDay7Tr1" & Strain=="wB") )
+
+wbNumPupD7T1
+
+
+
+```
+
+
+MORE FILTER EXAMPLES
+
+
+
+So filter is great, because we have the raw data that we need. Now we're ready to take that data, and format it even further to get the statistical metrics we need. To do this, we'll use a handy technique combining the "group_by" and "summarize" functions. 
+
+group_by() reformats the data into specific groups that you specify. 
+
+summarize() lets you create new columns of data that you define. Commonly, you use statistical functions on the raw data to generate the new columns.
+
+In our first example, let's look at our original filtered data of the wB strain on Day7:
+
+```{r}
+
+wbNumPupD7T1
+
+
+```
+
+And let's say we want to create a bar plot showing the averages for each treatment. We can use group_by()/summarize() to group our data by treatment, and generate the mean for each group:
+
+```{r}
+
+wbD7<-wbNumPupD7T1 %>% group_by(Strain, Treatment) %>% summarize(avg=mean(Count))
+
+wbD7
+
+
+
+```
+
+
+Now we can use this to create our plot:
+
+
+
+```{r}
+
+ggplot(data=wbD7, mapping=aes(x=Treatment, y=avg, fill=Treatment))+
+  geom_bar(stat="identity")
+
 
 
 ```
@@ -39,5 +127,70 @@ avgPupCount7Tr1
 
 
 
+
+```{r}
+
+
+#meanChemI<-df %>% group_by(strain) %>% summarise(avg=mean(ChemI), StandardDeviation=sd(ChemI), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
+
+
+
+ggplot(data=avgPupCount7Tr1, mapping=aes(x=TREATMENT, y=avgPupCount7Tr1$CONTROL..5..H2O., fill=TREATMENT))+
+  geom_bar(stat="identity")+
+  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI), width=0.2)
+
+
+```
+
+
+```{r}
+
+rawDay7Tr1<-read.delim("rawDay7Tr1.txt")
+
+rawDay7Tr1
+```
+
+
+```{r}
+
+day7<-read_csv("day7tr1raw.csv")
+day7
+
+day7Avg<-day7 %>% group_by(Strain,Treatment) %>% summarize(avg=mean(Count))
+
+day7Avg
+
+
+ggplot(data=day7Avg, mapping=aes(x=Strain, y=avg, fill=Treatment))+geom_bar(stat="identity", position="dodge")
+
+
+```
+```{r}
+
+boxDataTexts <- data.frame(
+  Days=c("9/1","9/1","9/2","9/2","9/3","9/3"),
+  Variable=c("Mom","Dad","Mom","Dad","Mom","Dad"),
+  Value=c(2,1,7,0,4,2)
+)
+boxDataTexts
+```
+
+```{r}
+
+myData<-read_csv("tidy2.csv")
+
+myData
+
+sumData<-group_by(.data=myData, Table, Strain, Treatment) %>% summarize(avg=mean(Count), StandardDeviation=sd(Count), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
+
+sumData
+
+ggplot(data=filter(.data=sumData, Table=="NumPupaeDay14Tr1" & Strain=="11-96wB"), mapping=aes(x=Treatment, y=avg, fill=Treatment))+
+  geom_bar(stat="identity")+
+  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI), width=0.2)
+
+#ggplot(data=day7Avg, mapping=aes(x=Strain, y=avg, fill=Treatment))+geom_bar(stat="identity", position="dodge")
+
+```
 
 
