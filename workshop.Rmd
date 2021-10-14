@@ -4,7 +4,7 @@ output: pdf_document
 ---
  
 Workshop Goals! 
-
+ 
 * Reformat Data (outside of R)
 * Load data into RStudio
 * Learn commands for filtering data
