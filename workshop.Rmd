@@ -3,7 +3,7 @@ title: "BIO 380 - Fall 2021 - Velazquez-Ulloa"
 output: pdf_document
 ---
  
-Workshop Goals!
+Workshop Goals! 
 
 * Reformat Data (outside of R)
 * Load data into RStudio
