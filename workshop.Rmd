@@ -1,11 +1,17 @@
 ---
-title: "R Notebook"
-output: html_notebook
+title: "BIO 380 - Data viz w/fly data"
+output: pdf_document
 ---
 
-1) Differences between fly strains (i.e., wB vs 2-3wB vs w14864) ==> Exons data table example
-2) Differences between treatments (i.e. control food vs ethanol food vs nicotine food).
-3) Possible differences between Test 1 and Test 2 data sets ==> Left-most data set on the spreadsheet vs Right-most data set. And if there are no differences between tests, then I am hoping the students can combine data from both tests to increase sample size.
+
+Contacts:
+Ethan Davis (edavis@lclark.edu)
+Jeremy McWilliams (jeremym@lclark.edu)
+
+If you need help, please reach out to us!!
+
+
+---------------------------------------------------------------------
 
 
 The main goal of today's workshop is to take the data from lab, import it into R, and ultimately create data visualizations. We're going to get into the weeds of R coding.
@@ -130,6 +136,8 @@ We'll use the "ggplot" package for creating our visualizations ("gg" stands for 
 * The data
 * The "aesthetics" (e.g. "points, lines, etc.")
 * The type of plot (barplot, boxplot, etc.)
+
+To see the various possibilities, check out the 'ggplot-cheat-sheet.pdf' in the files window.
 
 Let's look at this example of a box plot:
 
@@ -380,6 +388,171 @@ Create a bar plot with 95% confidence intervals using the reformatted data myEx2
 
 
 
+
+
+
+
+
+
+
+
+## Comparison of Trial data
+
+In a perfect world, we want to be able to combine our data from Trial 1 and Trial 2. Before doing so, we want to test to see if there are statistically significant differences between the data. For this, we'll use the "Wilcox t-test", which assumes non-parametric data.
+
+Let's compare the data for trial 1 & trial 2 for the following condition:
+day: 7
+strain: wB
+treatment: alcohol
+
+We'll use filter() to get two datasets (one for trial 1, one for trial 2):
+
+```{r}
+
+wb1<-filter(.data=sampleData, day=="7" & strain=="wB"& trial=="1" & treatment=="alcohol")
+
+wb1
+
+wb2<-filter(.data=sampleData, day=="7" & strain=="wB"& trial=="2" & treatment=="alcohol")
+
+wb2
+
+
+
+
+
+
+```
+
+
+
+Now we need to isolate the data for the 'count' column. We can do this using the syntax:
+
+dataSet$columnName
+
+```{r}
+
+# gets the values in the 'count' column as an array
+tr1<-wb1$count
+
+tr2<-wb2$count
+
+# prints out the data
+tr1
+tr2
+
+
+```
+
+Now we can perform the Wilcoxson t-test:
+
+```{r}
+
+wilcox.test(x=tr1, y=tr2)
+```
+
+A p-value of 0.05 or less would indicate the data is significantly different. Since it is not, you should be able to combine the data from trials 1 & 2 for that specific metric (wb, day7, alcohol) when generating your plots. In that case, your data query could be:
+
+```{r}
+
+wB<-filter(.data=sampleData, day=="7" & treatment=="alcohol" & strain=="wB")
+
+wB
+
+```
+
+Theoretically you would run more Wilcoxon t-tests on even more specific conditions, and then query all the data, combining trial data as appropriate.
+
+
+YOUR TURN:
+
+Using either your own data or the 'sampleData' data set, determine whether trial 1 and trial 2 data are significantly different for the following conditions:
+
+day:14
+treatment: control
+strain: wB
+
+```{r}
+
+# create your data subsets for trials 1 & 2
+
+
+# get the arrays from the 'count' column for each
+
+
+# run the wilcoxson t-test
+
+
+
+```
+
+
+
+
+### Line plot example
+
+Say you want to show how the average count of pupae changes over time from day 7 to 21 for the wB strain exposed to nicotine (in this example, we're going to combine trials 1 & 2, pretending that we had already run t-tests on them).
+
+
+```{r}
+
+#Data filter:
+
+wbNicotine<-filter(.data=sampleData, strain=="wB" & treatment=="nicotine")
+
+wbNicotine
+
+
+```
+
+
+Since we need to determine the averages, let's reformat the data using group_by() / summarize:
+
+```{r}
+
+wbNicotineReformatted<-wbNicotine %>% group_by(day) %>% summarize(avg=mean(count))
+
+wbNicotineReformatted
+
+
+```
+
+Now our data is ready for a line plot:
+
+```{r}
+
+wbLine<-ggplot(data=wbNicotineReformatted, mapping=aes(x=day, y=avg))+
+  geom_line()
+
+wbLine
+
+
+
+```
+
+
+We can improve this as before, by adding labels:
+
+```{r}
+
+wbLine<-ggplot(data=wbNicotineReformatted, mapping=aes(x=day, y=avg))+
+  geom_line()+
+  labs(title="Average wB pupae count over time when exposed to nicotine", y="Average Pupae Count", x="Day")
+
+wbLine
+
+
+
+```
+
+And finally, I can save it with ggsave():
+
+```{r}
+
+ggsave(filename="line.jpg", plot=wbLine)
+
+
+```
 
 
 
