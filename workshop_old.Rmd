@@ -1,0 +1,392 @@
+---
+title: "BIO 380 - Fall 2021 - Velazquez-Ulloa"
+output: pdf_document
+---
+ 
+Workshop Goals! 
+ 
+* Reformat Data (outside of R)
+* Learn some basic R commands (mean, median, standard deviation)
+* Load data into RStudio
+* Learn commands for filtering data
+* Use group_by/summarize
+* Create Data Visualizations using ggplot
+
+This document is an "R Notebook", which is a good choice for running R code.  R Notebooks are a mix of text/markdown, and R code "chunks". Below is an example of a code chunk. You can click the 'play' button to run the code chunk.
+
+Let's run this first code chunk to create a variable "x" with a value of 10, and then print it to the screen.
+
+```{r}
+#This is a comment, and isn't code.
+#Commenting your code is good! 
+
+#assigns 10 to the variable x
+x<-10
+
+#prints value of x
+x
+
+```
+
+
+It's pretty common in R to work with arrays of data. Arrays can be created manaully by using the "c()" (for "combine") function:
+
+```{r}
+
+flies<-c(4,6,4,10,12, 9)
+
+flies
+
+
+```
+
+We can use R to perform some basic statistics on arrays:
+
+```{r}
+# compute the average of the array "flies"
+avgFlies<-mean(flies)
+
+#print it to the screen
+avgFlies
+
+#compute the median of the array "flies"
+medianFlies<-median(flies)
+
+#print it to the screen
+medianFlies
+
+
+#compute the standard deviation of the array "flies"
+
+sdFlies<-sd(flies)
+
+#print it to the screen
+sdFlies
+
+```
+
+
+YOUR TURN:
+
+Say counted pupae in 7 vials, with these counts: 39, 20, 43, 30, 25, 19, 33
+Use the "c()" function to create a variable with those values as an array.
+Then, calculate and print the mean, median, and standard deviation.
+
+
+```{r}
+
+#define your array
+
+
+# caclculate and print the mean
+
+
+
+#calculate and print the median
+
+
+#calculate and print the standard deviation
+
+
+
+```
+
+
+
+Now we're going to get into loading and filtering data. First we need to load the "tidyverse", which will give us access to R functions we'll use shortly:
+
+
+
+```{r}
+library("tidyverse")
+
+```
+
+
+### Loading Data
+
+Loading a CSV file into RStudio isn't so bad. In the lower-right corner under the "Files" tab, click "Upload", then select the file from your computer. Once uploaded, it should appear listed in the Files tab.
+
+
+Now that the file is uploaded, we can open it within R using the "read_csv" function, and set it equal to a variable. First, let's try it with the test file:
+
+
+```{r}
+# this assigns the entire file to the variable "tidy":
+tidy<-read_csv("tidy.csv")
+
+tidy3<-read_csv("tidy3.csv")
+
+# and now we print it to the screen:
+tidy
+tidy3
+
+```
+
+
+Now try this with the data you uploaded. Call it something like "myData":
+
+```{r}
+# use read_csv to assign the data to myData
+
+
+#print it out to the screen
+
+
+```
+
+
+Before we get to any plotting, we have to get good at filtering. Basically, there's so much data in our dataframe that we have to really think about the data we need.
+
+
+Let's we want to create a bar chart showing the average number of pupae of the wB strain across the three treatments (control, alcohol, and nicotine) on Day 14 from the first trial. We'll create a new variable that just has that data, using the filter() function:
+
+
+```{r}
+
+# in filter(), you must first define which dataset (.data=...), and then indicate what you're filtering on
+
+wbNumPupD14T1<-filter(.data=tidy, (Table=="NumPupaeDay14Tr1" & Strain=="wB") )
+
+wbNumPupD14T1
+
+
+
+```
+
+
+
+Let's say you want to look at just two strains within the same day, across treatments. In that case, you may want to use the "or" operator as part of your filter:
+
+
+```{r}
+
+twoStrains<-filter(.data=tidy, Table=="NumPupaeDay14Tr1" & Strain=="wB" | Table=="NumPupaeDay14Tr1" & Strain=="2-3wB")
+
+twoStrains
+
+
+
+```
+
+
+YOUR TURN:
+
+Create a subset of data using filter() that contains all males and females from day 21 for the first trial:
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+Create a subset of data using filter() that contains all males and females from day 21 for both trials:
+
+```{r}
+
+
+
+
+
+
+
+```
+
+
+
+MORE FILTER EXAMPLES
+
+
+
+
+
+
+## Box Plots
+
+Box plots are good for showing the distribution of the data, so in this case we're going to use our raw data (i.e. we don't need to calculate averages, etc.). 
+For this, we're going to use "ggplot", which is a commonly used R library for creating plots
+
+
+Let's take a look at the basic structure of ggplot code:
+
+
+```{r}
+
+ggplot(data=wbNumPupD14T1, mapping=aes(x=Treatment, y=Count))+
+  geom_boxplot()
+
+
+
+ggplot(data=wbNumPupD14T1, mapping=aes(x=Treatment, y=Count, fill=Treatment)) +
+  geom_boxplot()+
+  labs(y="Number of Pupae", x="Treatment", title="Number of Pupae for Strain wB at Day 14")+
+  scale_fill_discrete(name = "Treatment")
+
+```
+
+
+
+
+
+So filter is great, because we have the raw data that we need. Now we're ready to take that data, and format it even further to get the statistical metrics we need. To do this, we'll use a handy technique combining the "group_by" and "summarize" functions. 
+
+group_by() reformats the data into specific groups that you specify. 
+
+summarize() lets you create new columns of data that you define. Commonly, you use statistical functions on the raw data to generate the new columns.
+
+In our first example, let's look at our original filtered data of the wB strain on Day7:
+
+```{r}
+
+wbNumPupD14T1
+
+
+```
+
+And let's say we want to create a bar plot showing the averages for each treatment. We can use group_by()/summarize() to group our data by treatment, and generate the mean for each group:
+
+```{r}
+
+# This uses the "Pipe" operator, %>%. You can think of this to mean "and then...."
+
+wbD14<-wbNumPupD14T1 %>% group_by(Strain, Treatment) %>% summarize(Avg=mean(Count))
+
+wbD14
+
+
+
+```
+
+One thing we'll need for bar graphs down the road is data for 95% confidence intervals. We can re-do our groupby/summarize to calculate that data:
+
+```{r}
+
+
+wbD14<-wbNumPupD14T1 %>% group_by(Strain, Treatment) %>% summarize(
+  Avg=mean(Count), 
+  StDev=sd(Count), 
+  N=n(),
+  upperCI=Avg+((qnorm(0.975)*StDev)/sqrt(N)),
+  lowerCI=Avg-((qnorm(0.975)*StDev)/sqrt(N)),
+  )
+
+wbD14
+
+
+#StandardDeviation=sd(ChemI), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
+
+
+```
+
+
+
+
+
+BoxPlots:
+
+```{r}
+
+ggplot(data=wbNumPupD14T1, mapping=aes(x=Treatment, y=Count, fill=Treatment)) +
+  geom_boxplot()+
+  labs(y="Number of Pupae", x="Treatment", title="Distribution of Pupae for Strain wB at Day 14")+
+  scale_fill_discrete(name = "Treatment")
+
+ggsave("boxplot.wB14.jpg")
+
+```
+
+
+
+
+
+Now we can use this to create our plot:
+
+
+
+```{r}
+
+ggplot(data=wbD14, mapping=aes(x=Treatment, y=Avg, fill=Treatment))+
+  geom_bar(stat="identity")+
+  geom_errorbar(mapping=aes(ymin = lowerCI, ymax = upperCI), width=0.2)+
+  labs(title="Average Number of Pupae, Day 14", ylab="Average Pupae")
+
+
+
+```
+
+
+
+
+
+```{r}
+
+
+#meanChemI<-df %>% group_by(strain) %>% summarise(avg=mean(ChemI), StandardDeviation=sd(ChemI), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
+
+
+
+ggplot(data=avgPupCount7Tr1, mapping=aes(x=TREATMENT, y=avgPupCount7Tr1$CONTROL..5..H2O., fill=TREATMENT))+
+  geom_bar(stat="identity")+
+  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI), width=0.2)
+
+
+```
+
+
+```{r}
+
+rawDay7Tr1<-read.delim("rawDay7Tr1.txt")
+
+rawDay7Tr1
+```
+
+
+```{r}
+
+day7<-read_csv("day7tr1raw.csv")
+day7
+
+day7Avg<-day7 %>% group_by(Strain,Treatment) %>% summarize(avg=mean(Count))
+
+day7Avg
+
+
+ggplot(data=day7Avg, mapping=aes(x=Strain, y=avg, fill=Treatment))+geom_bar(stat="identity", position="dodge")
+
+
+```
+```{r}
+
+boxDataTexts <- data.frame(
+  Days=c("9/1","9/1","9/2","9/2","9/3","9/3"),
+  Variable=c("Mom","Dad","Mom","Dad","Mom","Dad"),
+  Value=c(2,1,7,0,4,2)
+)
+boxDataTexts
+```
+
+```{r}
+
+myData<-read_csv("tidy2.csv")
+
+myData
+
+sumData<-group_by(.data=myData, Table, Strain, Treatment) %>% summarize(avg=mean(Count), StandardDeviation=sd(Count), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
+
+sumData
+
+ggplot(data=filter(.data=sumData, Table=="NumPupaeDay14Tr1" & Strain=="11-96wB"), mapping=aes(x=Treatment, y=avg, fill=Treatment))+
+  geom_bar(stat="identity")+
+  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI), width=0.2)+
+  labs
+
+#ggplot(data=day7Avg, mapping=aes(x=Strain, y=avg, fill=Treatment))+geom_bar(stat="identity", position="dodge")
+
+```
+
+

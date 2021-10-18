@@ -1,196 +1,391 @@
 ---
-title: "BIO 380 - Fall 2021 - Velazquez-Ulloa"
-output: pdf_document
+title: "R Notebook"
+output: html_notebook
 ---
- 
-Workshop Goals! 
- 
-* Reformat Data (outside of R)
-* Load data into RStudio
-* Learn commands for filtering data
-* Use group_by/summarize
-* Create Data Visualizations using ggplot
 
-This document is an "R Notebook", which is a good choice for running R code.  R Notebooks are a mix of text/markdown, and R code "chunks". Below is an example of a code chunk. You can click the 'play' button to run the code chunk.
-
-```{r}
-#assigns 10 to the variable x
-x<-10
-
-#prints value of x
-x
-
-```
-
-```{r}
-library("tidyverse")
-
-```
+1) Differences between fly strains (i.e., wB vs 2-3wB vs w14864) ==> Exons data table example
+2) Differences between treatments (i.e. control food vs ethanol food vs nicotine food).
+3) Possible differences between Test 1 and Test 2 data sets ==> Left-most data set on the spreadsheet vs Right-most data set. And if there are no differences between tests, then I am hoping the students can combine data from both tests to increase sample size.
 
 
-### Loading Data
+The main goal of today's workshop is to take the data from lab, import it into R, and ultimately create data visualizations. We're going to get into the weeds of R coding.
 
-Loading a CSV file into RStudio isn't so bad. In the lower-right corner under the "Files" tab, click "Upload", then select the file from your computer. Once uploaded, it should appear listed in the Files tab.
+Strategy:
+What do I want to show in my visualization?
 
+...this will dictate....
 
-Now that the file is uploaded, we can open it within R using the "read_csv" function, and set it equal to a variable. First, let's try it with the test file:
+What data do I need?
 
+...and based upon what type of plot.....
 
-```{r}
-# this assigns the entire file to the variable "tidy":
-tidy<-read_csv("tidy.csv")
-
-# and now we print it to the screen:
-tidy
-
-```
+Do I need to run any calculations on the data prior to plotting?
 
 
-Now try this with the data you uploaded. Call it something like "myData":
+
+
+For example:
+
+I want to show a bar chart comparing average pupae (and 95% CI) among fly strains under ethanol treatment at day 14.
+
+....so, I need....
+
+Raw data for all fly strains under ethanol at day 14
+
+...and since I'm using a bar chart to show averages and 95% confidence intervals...
+
+
+I'll need to run some calculations before I plot
+
+
+First let's load the prerequisite "tidyverse" library, which contains functions we'll need. In this R Notebook format, code chunks are the grey rectangles. You can run them by clicking the green, right-pointing triangle (the "play" button).
 
 ```{r}
-# use read_csv to assign the data to myData
+# This is a comment, which can be useful to describe what's happening
 
+#load the tidyverse library
 
-#print it out to the screen
+library(tidyverse)
 
 
 ```
 
 
 
-A common question that comes up is "is it necessary to print things to the screen"? Technically the answer is "no", but it's a good idea to get in the habit of doing it. Making mistakes while coding is really common, so printing things is a good way to check your work. 
-
-Before we get to any plotting, we have to get good at filtering. Basically, there's so much data in our dataframe that we have to really think about the data we need.
-
-
-Let's we want to create a bar chart showing the average number of pupae of the wB strain across the three treatments (control, alcohol, and nicotine) from the first trial. We'll create a new variable that just has that data, using the filter() function:
-
+Let's start by looking at how to load data into R. In the files tab of the lower-right quadrant, you'll see a file named tidyData.csv. This is a file of mostly pretend data in the right format that we can use for later examples. In the code chunk below, you'll see the syntax for loading the data as a variable. Click the 'play' button to run the code:
 
 ```{r}
+# The "<-" is used to assign value, sort of like "=" in other languages
+
+sampleData<-read_csv("tidyData.csv")
+
+# Prints sampleData to the screen
+sampleData
+```
 
 
-wbNumPupD7T1<-filter(.data=tidy, (Table=="NumPupaeDay7Tr1" & Strain=="wB") )
+YOUR TURN:
 
-wbNumPupD7T1
+Upload your formatted data (click 'Upload' in the Files tab, and select your file). Once it's uploaded, rename your file to 'myData.csv' (click the checkbox next to it, and click 'Rename').
+
+Now create a variable 'myData' and assign in to your dataset, using the read_csv function:
+
+```{r}
 
 
 
 ```
 
 
-MORE FILTER EXAMPLES
+
+
+Now that we have our data loaded, we should think about what we want to do, which will determine what code we write. Moving forward, when it's "Your Turn", use "myData" when you can. But if you don't have enough data, use the "sampleData" dataset.
+
+
+## EXAMPLE 1
+
+Let's say we want to create a box plot showing the data distribution of total pupae of all strains subject to the nicotine treatment on day 14 of the first trial. In the files area, look at "boxPlotExample.jpg". Looking back at our the data, we want:
+
+stage: pupae
+day: 14
+treatment: nicotine
+trial: 1
+
+We can create a subset of data using the filter() function, as follows:
+
+```{r}
+# first define which dataset you're using, with ".data=..."
+# then define your conditions. Notice that you use "==".
+
+ex1<-filter(.data=sampleData, stage=="pupae" & day=="14" & treatment=="nicotine" & trial=="1")
+
+# print to screen, to check
+ex1
+
+
+```
+
+YOUR TURN:
+
+Create a variable 'myEx1' on your dataset that gets all strains of total pupae on day 7, trail 1, of the alcohol treatment:
+
+```{r}
+
+# Create your variable myEx1 using the filter() function
+
+
+# Print to the screen to confirm
 
 
 
-So filter is great, because we have the raw data that we need. Now we're ready to take that data, and format it even further to get the statistical metrics we need. To do this, we'll use a handy technique combining the "group_by" and "summarize" functions. 
+
+
+```
+
+
+The next question we need to answer is "do we need to run any calculations on the data, based on the plot I want?" Since a box plot shows distribution of the raw data, we don't need to do anything else - we can now write our code to create the plot.
+
+We'll use the "ggplot" package for creating our visualizations ("gg" stands for "grammar of graphics"). At minimum, ggplot visualizations consist of three things:
+
+* The data
+* The "aesthetics" (e.g. "points, lines, etc.")
+* The type of plot (barplot, boxplot, etc.)
+
+Let's look at this example of a box plot:
+
+```{r}
+
+ex1BoxPlot<-ggplot(data=ex1, mapping=aes(x=strain, y=count))+
+  geom_boxplot()
+
+# components:
+# The Data: data=ex1
+# The aesthetics: mapping=aes(x=strain, y=count)
+# The type of plot: +geom_boxplot
+
+#prints to the screen
+ex1BoxPlot
+
+```
+
+We can improve the plot above in a couple ways:
+
+* add "fill" to the aesthetics (this will give it some color and add a legend)
+* add custom labels using the labs() function
+
+
+```{r}
+
+ex1BoxPlot<-ggplot(data=ex1, mapping=aes(x=strain, y=count, fill=strain))+
+  geom_boxplot()+
+  labs(x="Strain of fly", y="Distribution of pupae count", title="Comparison of fly strains under the nicotine treatment, day 14")
+
+# components:
+# The Data: data=ex1
+# The aesthetics: mapping=aes(x=strain, y=count) IMPORTANT: the x and y values must match the column headings of your dataset
+# The type of plot: +geom_boxplot
+
+#prints to the screen
+ex1BoxPlot
+
+```
+
+Once you're happy with your plot, you can save it using "ggsave":
+
+```{r}
+
+# specify the filename you want, and which variable contains your plot
+ggsave(filename="ex1BoxPlot.jpg", plot=ex1BoxPlot)
+
+
+
+```
+
+
+YOUR TURN:
+
+Create a box plot comparing the distribution of pupae count among all strains on day 7, trial 1, under the alcohol treatment. Save it as "myEx1.jpg".
+Hint: you should be able to use the variable myEx1 you generated earlier.
+
+```{r}
+
+# Print out the data, as a refresher
+
+
+# Write the ggplot code, assigned to some variable
+
+
+# print it to the screen 
+
+
+# Save it using ggsave
+
+
+```
+
+
+
+## EXAMPLE 2
+
+Now, let's say we want to create a bar plot showing the average pupae count on day 21, trial 1, of the wB strain, comparing each of the treatments, with 95% confidence intervals. Take a look at barPlotExample.jpg to see our end goal.
+
+First, let's consider what constraints we need to get our subset of data:
+
+strain: wB
+trial: 1
+day: 21
+
+Let's use filter() to generate our subset of data:
+
+
+```{r}
+# use the filter function, identifying the original dataset, and adding my conditions
+
+ex2<-filter(.data=sampleData, strain=="wB"& trial=="1" & day=="21")
+
+#print to screen
+
+ex2
+
+
+```
+
+
+YOUR TURN:
+
+Generate a subset of data for a different strain across all conditions, for day 14, trial 1. Call it 'myEx2'.
+
+
+```{r}
+
+
+
+
+```
+
+
+
+
+Now let's determine if we need to run any calculations on our data for this chart. Since our goal is to show averages and confidence intervals on a bar chart, the answer is YES.
+
+Fortunately, there's a pretty nifty way to do this in R, using two functions in tandem: group_by() and summarize()
 
 group_by() reformats the data into specific groups that you specify. 
 
 summarize() lets you create new columns of data that you define. Commonly, you use statistical functions on the raw data to generate the new columns.
 
-In our first example, let's look at our original filtered data of the wB strain on Day7:
+Thinking about our data, and what our goal is, we want averages of each treatment. Therefore, we want to "group by" treatment. Also, one measurement we need is the average, or mean, of pupae count for each treatment group. Take a look at the code sample below:
+
+
+
+
+
 
 ```{r}
 
-wbNumPupD7T1
+# This sytax uses the R "pipe" operator, %>%. Think of it as reading "and then...."
+
+# In the 'summarize' function, I'm creating a new column called "average", and setting it equal to the mean of count, per treatment (as determined by group_by).
+
+ex2Data<-ex2 %>% group_by(treatment) %>% summarize(average=mean(count))
+
+ex2Data
 
 
 ```
 
-And let's say we want to create a bar plot showing the averages for each treatment. We can use group_by()/summarize() to group our data by treatment, and generate the mean for each group:
+
+We can expand this to include calculations for confidence intervals (we're also including standard deviation and 'n', as we need both of those for our CI forumlas):
+
+
 
 ```{r}
 
-wbD7<-wbNumPupD7T1 %>% group_by(Strain, Treatment) %>% summarize(avg=mean(Count))
+# Expanding 'summarize' to include columns for average, standard deviation, n, upperCI, and lowerCI
+# This can all be written in one line, but is a little easier to read this way.
 
-wbD7
+ex2Data<-ex2 %>% group_by(treatment) %>% summarize(
+  average=mean(count),
+  stdev=sd(count), 
+  N=n(),
+  upperCI=average+((qnorm(0.975)*stdev)/sqrt(N)),
+  lowerCI=average-((qnorm(0.975)*stdev)/sqrt(N))
+  )
+
+
+ex2Data
+
+```
+
+
+YOUR TURN:
+
+For the subset of data myEx2, use group_by() and summarize to restructure your data to include average, standard deviation, n, upperCI, and lowerCI. Call this variable myEx2Data.
+
+```{r}
+
+
+
 
 
 
 ```
 
 
-Now we can use this to create our plot:
-
+Now we're ready to generate the bar plot. The structure is similar to the box plot, with a few differences. Let's look at this example:
 
 
 ```{r}
 
-ggplot(data=wbD7, mapping=aes(x=Treatment, y=avg, fill=Treatment))+
+# One difference here is the stat="identity" in geom_bar. This means "use the data I specify in y=, rather than counting the data".
+
+ex2BarPlot<-ggplot(data=ex2Data, mapping=aes(x=treatment, y=average))+
   geom_bar(stat="identity")
 
+ex2BarPlot
 
 
 ```
 
 
-
-
+We can spruce this up by using 'fill' and adding labels:
 
 ```{r}
 
 
-#meanChemI<-df %>% group_by(strain) %>% summarise(avg=mean(ChemI), StandardDeviation=sd(ChemI), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
-
-
-
-ggplot(data=avgPupCount7Tr1, mapping=aes(x=TREATMENT, y=avgPupCount7Tr1$CONTROL..5..H2O., fill=TREATMENT))+
+ex2BarPlot<-ggplot(data=ex2Data, mapping=aes(x=treatment, y=average, fill=treatment))+
   geom_bar(stat="identity")+
-  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI), width=0.2)
+  labs(x="Treatment type", y="Average Pupae Count", title="Average pupae count of wB strain, day 21, with different treatments")
+
+ex2BarPlot
+
+
+
 
 
 ```
+
+Finally, we can add geom_errorbar to add our confidence intervals:
 
 
 ```{r}
 
-rawDay7Tr1<-read.delim("rawDay7Tr1.txt")
 
-rawDay7Tr1
-```
-
-
-```{r}
-
-day7<-read_csv("day7tr1raw.csv")
-day7
-
-day7Avg<-day7 %>% group_by(Strain,Treatment) %>% summarize(avg=mean(Count))
-
-day7Avg
-
-
-ggplot(data=day7Avg, mapping=aes(x=Strain, y=avg, fill=Treatment))+geom_bar(stat="identity", position="dodge")
-
-
-```
-```{r}
-
-boxDataTexts <- data.frame(
-  Days=c("9/1","9/1","9/2","9/2","9/3","9/3"),
-  Variable=c("Mom","Dad","Mom","Dad","Mom","Dad"),
-  Value=c(2,1,7,0,4,2)
-)
-boxDataTexts
-```
-
-```{r}
-
-myData<-read_csv("tidy2.csv")
-
-myData
-
-sumData<-group_by(.data=myData, Table, Strain, Treatment) %>% summarize(avg=mean(Count), StandardDeviation=sd(Count), n=n(), upperCI=avg+((qnorm(0.975)*StandardDeviation)/sqrt(n)), lowerCI=avg-((qnorm(0.975)*StandardDeviation)/sqrt(n)))
-
-sumData
-
-ggplot(data=filter(.data=sumData, Table=="NumPupaeDay14Tr1" & Strain=="11-96wB"), mapping=aes(x=Treatment, y=avg, fill=Treatment))+
+ex2BarPlot<-ggplot(data=ex2Data, mapping=aes(x=treatment, y=average, fill=treatment))+
   geom_bar(stat="identity")+
-  geom_errorbar(aes(ymin = lowerCI, ymax = upperCI), width=0.2)
+  labs(x="Treatment type", y="Average Pupae Count", title="Average pupae count of wB strain, day 21, with different treatments")+
+  geom_errorbar(mapping=aes(ymin = lowerCI, ymax = upperCI), width=0.2)
 
-#ggplot(data=day7Avg, mapping=aes(x=Strain, y=avg, fill=Treatment))+geom_bar(stat="identity", position="dodge")
+ex2BarPlot
+
+
 
 ```
+
+
+YOUR TURN:
+
+Create a bar plot with 95% confidence intervals using the reformatted data myEx2Data:
+
+
+```{r}
+
+
+
+
+
+
+```
+
+
+
+
+
+
+
+
+
+
+
 
 
