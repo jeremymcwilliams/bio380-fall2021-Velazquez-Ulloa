@@ -1,0 +1,28 @@
+---
+title: "Data Management: Tidy Data"
+output: html_notebook
+---
+
+## What is tidy data?
+
+Roughly, tidy data are organized such that each row contains a single observation. Each column then, represents a single variable.
+
+# What counts as an observation?
+
+In our example, imagine a distinct observation occurs every time we measure something (in our case, *counts*).
+
+# Why are tidy data useful?
+
+While the present form of our data may be visually more interesting, its incredibly difficult to perform automated analysis with it, since we can't predictably grab an item of interest by simply using the rows and columns as an index. 
+
+# Does data have to be tidy to work with?
+
+Not necessarily, but it tends to make things simpler and less error-prone, especially when performing computational analysis.
+
+
+# Useful commands for spreadsheets
+
+* **ctrl+C -> ctrl+V**  -  copy and paste selection of cells
+* **"paste transposed"**  -  pastes selection with rows and columns switched
+* **"paste value only"**  - for formula cells, pastes only the returned value and not the formula
+* **click and drag** - clicking the right corner of a cell and dragging will copy the cell as you drag
