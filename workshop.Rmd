@@ -398,22 +398,24 @@ Create a bar plot with 95% confidence intervals using the reformatted data myEx2
 
 ## Comparison of Trial data
 
-In a perfect world, we want to be able to combine our data from Trial 1 and Trial 2. Before doing so, we want to test to see if there are statistically significant differences between the data. For this, we'll use the "Wilcox t-test", which assumes non-parametric data.
+In a perfect world, we want to be able to combine our data from Trial 1 and Trial 2 for making the charts above. Before doing so, we want to test to see if there are statistically significant differences between the data. For this, we'll use the "Wilcox t-test", which assumes non-parametric data.
+
+IMPORTANT: this is only necessary for the wB strain in the control treatment. If no significant differences are found, then it can be assumed that the data for the other strains/treatments for trials 1&2 can be combined.
 
 Let's compare the data for trial 1 & trial 2 for the following condition:
 day: 7
 strain: wB
-treatment: alcohol
+treatment: control
 
 We'll use filter() to get two datasets (one for trial 1, one for trial 2):
 
 ```{r}
 
-wb1<-filter(.data=sampleData, day=="7" & strain=="wB"& trial=="1" & treatment=="alcohol")
+wb1<-filter(.data=sampleData, day=="7" & strain=="wB"& trial=="1" & treatment=="control")
 
 wb1
 
-wb2<-filter(.data=sampleData, day=="7" & strain=="wB"& trial=="2" & treatment=="alcohol")
+wb2<-filter(.data=sampleData, day=="7" & strain=="wB"& trial=="2" & treatment=="control")
 
 wb2
 
@@ -448,7 +450,7 @@ Now we can perform the Wilcoxson t-test:
 
 ```{r}
 
-wilcox.test(x=tr1, y=tr2)
+wilcox.test(x=tr1, y=tr2, paired=TRUE)
 ```
 
 A p-value of 0.05 or less would indicate the data is significantly different. Since it is not, you should be able to combine the data from trials 1 & 2 for that specific metric (wb, day7, alcohol) when generating your plots. In that case, your data query could be:
